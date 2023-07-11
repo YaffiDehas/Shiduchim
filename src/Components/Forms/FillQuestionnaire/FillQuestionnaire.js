@@ -839,7 +839,7 @@ export default function FormPropsTextFields() {
                       required
                       label="שם"
                       name="fatherInLawName"
-                      defaultValue=""
+                      defaultValue={inLawsForm.fatherInLawName}
                       onChange={handleChangeInputInLaw}
                     />
                   </Grid>
@@ -848,7 +848,7 @@ export default function FormPropsTextFields() {
                       required
                       label="טלפון"
                       name="fatherInLawPhone"
-                      defaultValue=""
+                      defaultValue={inLawsForm.fatherInLawPhone}
                       onChange={handleChangeInputInLaw}
                     />
                   </Grid>
@@ -857,13 +857,17 @@ export default function FormPropsTextFields() {
                       required
                       label="עיר"
                       name="fatherInLawCity"
-                      defaultValue=""
+                      defaultValue={inLawsForm.fatherInLawCity}
                       onChange={handleChangeInputInLaw}
                     />
                   </Grid>
-                  {form.inLaws && form.inLaws.map((inLaw, index) => <InLaws key={index} data={inLaw} handleChange={handleChangeInputInLaw} />)}
+                  {form.inLaws && form.inLaws.map((inLaw, index) => {
+                  if (inLaw.fatherInLawName || inLaw.fatherInLawPhone || inLaw.fatherInLawCity) {
+                    return <InLaws key={index + 1} data={inLaw} back={returnedBack} handleChange={handleChangeInputRecomended} />
+                  }
+                })}
                   <Button onClick={handleAddInLaws}>הוסף</Button>
-                </Grid>
+                </Grid> 
               )
             }
             {activeStep === 5 && (
