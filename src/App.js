@@ -16,10 +16,30 @@ import Engaged from './Components/Engaged/Engade';
 import CloseEngagedPage from './Components/CloseEngagedPage/CloseEngagedPage';
 import SendEmail from './Components/SendMail/SendMail';
 import ShowMessages from './Components/ShowMessages/ShowMessages';
-
+import moment from 'moment';
+import parseFormat from 'moment-parseformat';
 import './App.css';
 
 function App() {
+  const format = parseFormat('10/10/2010',
+    { preferredOrder: { '/': 'DMY', '.': 'MDY', '-': 'YMD' } }
+);
+  
+let day = "2023-06-25T09:44:34.745+00:00"
+let date = moment(day);
+  
+console.log(date.format(format));
+
+const dateFromDB = '2023-06-25T09:44:34.745+00:00'
+const formattedDate = moment(dateFromDB).utc().format('DD/MM/YY')
+
+console.log( 'Date From DB:', dateFromDB )
+//=> 2005-12-03T18:30:00.000Z
+
+console.log( 'Formatted Date:', formattedDate )
+  console.log(new Intl.DateTimeFormat('en-u-ca-hebrew',{dateStyle:"full"}).format(new Date()));
+
+// console.log(new Intl.DateTimeFormat('he-u-ca-hebrew',{weekday: 'long', year:'numeric', month:'numeric', day:'numeric'}).format(new Date()));
   return (
     <>
     <Router>

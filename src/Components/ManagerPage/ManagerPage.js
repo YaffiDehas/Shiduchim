@@ -50,8 +50,8 @@ function ManagerPage() {
       case "showMessages":
         navigate('/ShowMessages');
         break;
-        case "checkingNewRegisterd":
-          console.log('jdksj');
+        case "SearchAndMatch":
+          navigate('/SearchAndMatch');
           break;
       default:
         navigate('/login');
@@ -89,10 +89,13 @@ function ManagerPage() {
                   'aria-labelledby': 'basic-button',
                 }}
               >
-                <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>צפיה בכרטיסי משתמשים</MenuItem>
+                <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>בדיקת מועמדים לא רלוונטיים</MenuItem>
                 <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>בדיקת שדכנים חדשים</MenuItem>
                 <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>בדיקת מועמדים חדשים</MenuItem>
               </Menu>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" onClick={handleClick} name="SearchAndMatch">צפיה בכרטיסי משתמשים</Button>
             </Grid>
             <Grid item>
               <Button variant="contained" onClick={handleClick} name="showMessages">צפיה בהודעות</Button>

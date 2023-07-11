@@ -2,8 +2,7 @@
     direction: rtl;
     margin: 0 3%;
     margin-top: 15%;
-}
-.css-78trlr-MuiButtonBase-root-MuiIconButton-root {
+    .css-78trlr-MuiButtonBase-root-MuiIconButton-root {
     width: fit-content !important;
     border-radius: 0% !important;
     color: #796136 !important;
@@ -11,6 +10,8 @@
     margin-left: 3% !important;
     margin-bottom: 1% !important;
 }
+}
+
 .css-i4bv87-MuiSvgIcon-root {
     color: #796136;
     margin-bottom: -5px;

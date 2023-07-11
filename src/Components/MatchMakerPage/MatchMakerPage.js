@@ -47,6 +47,10 @@ function MatchMakerPage() {
     }
   }
 
+  const handleCloseModal = () => {
+    setShowSendMessageModal(!showSendMessagemodal);
+  }
+
   return (
     <div id="app">
       <Box sx={{ display: 'flex', flexWrap: 'wrap', minWidth: 300, width: '100%' }}>
@@ -71,7 +75,7 @@ function MatchMakerPage() {
         </div>
         <ImageSrc style={{ backgroundImage: `url(${rings2})` }} />
       </Box>
-      <SendEmail show={showSendMessagemodal} handleClose={setShowSendMessageModal}/>
+      <SendEmail show={showSendMessagemodal} handleClose={handleCloseModal}/>
     </div>
   );
 }

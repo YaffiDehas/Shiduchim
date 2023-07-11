@@ -143,44 +143,14 @@ const CloseMatch = () => {
                             <TextField
                                 label="תאריך סגירת שידוך"
                                 name="dateWort"
+                                type="date"
                                 onChange={handleChange}
                                 variant="outlined"
                                 margin="normal"
                             />
-                            {/* <LocalizationProvider dateAdapter={AdapterDayjs} onChange={handleChange}>
-                                <DatePicker />
-                            </LocalizationProvider> */}
-                        </Grid>
-                        <Grid item>
-                            {/* <Button
-                                variant="contained"
-                                component="label"
-                            >
-                                Upload File
-                                <input
-                                    type="file"
-                                    hidden
-                                    name="image"
-                                    onChange={handleChange}
-                                />
-                            </Button> */}
-                            <FileUpload value={files} onChange={setFiles} />;
                         </Grid>
                     </Grid>
-                    {/* <input
-                            accept="image/*"
-                            // className={classes.input}
-                            style={{ display: 'none' }}
-                            id="raised-button-file"
-                            multiple
-                            type="file"
-                        />
-                        <label htmlFor="raised-button-file">
-                            <Button variant="raised" component="span">
-                                Upload
-                            </Button>
-                        </label> */}
-                    {/* <button type="submit">Submit</button> */}
+
                     <Button type="submit" variant="contained">שליחה</Button>
                 </form>
             </Card>

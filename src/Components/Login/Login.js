@@ -8,28 +8,43 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Checkbox from '@mui/material/Checkbox';
 import Card from '@mui/material/Card';
-import { Button, Divider, Grid } from '@mui/material';
+import { Alert, Button, Divider, Grid } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Header from "../Header/Header";
 import { userLogin } from '../../store/user/userActions';
 import './Login.css';
-import Header from "../Header/Header";
+
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formValues, setFormValues] = useState({
     name: '',
-    email: '',
     password: '',
   });
   const [formErrors, setFormErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [checked, setChecked] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [errorAfterSubmit, setErrorAfterSubmit] = useState(null);
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const userType = params.get("user");
 
+
+  // הודעה לבדיקת מועמדים לא רלוונטיים
+  const [showModal, setShowModal] = useState(true);
+  const handleClose = () => {
+    setShowModal(!showModal);
+}
+const handleOpenUnRellevantCandidate = () => {
+// בדיקה האם זה מנהל או שדכנית ולהעביר אותם דף בהאתם
+}
   const handleCheck = (event) => {
     setChecked(event.target.checked);
   };
@@ -39,13 +54,10 @@ const Login = () => {
     event.preventDefault();
   };
   const handleChange = (event) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setErrorAfterSubmit(null);
     const { name, value } = event.target;
-    if (name === "name" && !/^[a-zA-Z]+$/.test(value.trim())) {
-      setFormErrors({ ...formErrors, name: 'Name can only contain letters' });
-    }
-    else if (name === "email" && !emailRegex.test(value.trim())) {
-      setFormErrors({ ...formErrors, email: 'Invalid Email format' });
+    if (name === "name" && !/^[a-zA-Z0-9]+$/.test(value.trim())) {
+      setFormErrors({ ...formErrors, name: 'Name can only contain letters and numbers' });
     }
     else if (name === "password" && value.trim().length < 8) {
       setFormErrors({ ...formErrors, password: 'Password must be at least 8 characters long' });
@@ -54,9 +66,6 @@ const Login = () => {
       switch (name) {
         case "name":
           setFormErrors({ ...formErrors, name: "" });
-          break;
-        case "email":
-          setFormErrors({ ...formErrors, email: "" });
           break;
         case "password":
           setFormErrors({ ...formErrors, password: "" });
@@ -76,17 +85,25 @@ const Login = () => {
     event.preventDefault();
     const errors = validateForm();
     if (!errors) {
-      // Handle form submission
-      // axios.post("/localhost:27017/shiduchim/login", {
-      //   name: formValues.name,
-      //   email: formValues.email,
-      //   password: formValues.password,
-      //   checked: checked
-      // })
-      //   .then(res => { console.log(res); dispatch(saveUser(res.data)); })
-      //   .catch(err => console.log(err)).navigate('/FillQuestionnaire')
-      dispatch(userLogin({ ...formValues, userType: userType }));
-      // TODO: בדיקת יוזר האם קיים במערכת ואם כן איזה סוג
+      //Handle form submission
+      axios.post("http://localhost:5000/api/shiduchim/auth/login", {
+        name: formValues.name,
+        password: formValues.password
+      }).then(resp => {
+        if (resp.status === 200) {
+          let connectedUser = { ...resp.data.connectedUser, token: resp.data.token }
+          dispatch(userLogin(connectedUser));
+          if (connectedUser.role === "matchmaker") {
+            navigate("/MatchMakerPage")
+          }
+          else if (connectedUser.role === "admin") {
+            navigate("/ManagerPage")
+          }
+        }
+      }).catch(err => {
+        setErrorAfterSubmit(err.response.data.message)
+      })
+
     } else {
       setFormErrors(errors);
     }
@@ -98,16 +115,8 @@ const Login = () => {
     if (!(formValues.name && formValues.name.trim())) {
       setFormErrors({ ...formErrors, name: 'Name is required' });
     }
-    else if (!/^[a-zA-Z]+$/.test(formValues.name.trim())) {
-      setFormErrors({ ...formErrors, name: 'Name can only contain letters' });
-    }
-
-    // Validate email field
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!(formValues.email && formValues.email.trim())) {
-      setFormErrors({ ...formErrors, email: 'Email is required' });
-    } else if (!emailRegex.test(formValues.email.trim())) {
-      setFormErrors({ ...formErrors, email: 'Invalid email format' });
+    else if (!/^[a-zA-Z0-9]+$/.test(formValues.name.trim())) {
+      setFormErrors({ ...formErrors, name: 'Name can only contain letters and numbers' });
     }
 
     // Validate password field
@@ -117,9 +126,9 @@ const Login = () => {
     } else if (formValues.password.trim().length < 8) {
       setFormErrors({ ...formErrors, password: 'Password must be at least 8 characters long' });
     }
-    return (!!formErrors.name || !!formErrors.email || !!formErrors.password || !checked) || !(formValues.name !== "" && formValues.email !== "" && formValues.password !== "");
+    return (!!formErrors.name || !!formErrors.password || !checked) || !(formValues.name !== "" && formValues.password !== "");
   };
-  const validation = (!!formErrors.name || !!formErrors.email || !!formErrors.password || !checked) || !(formValues.name !== "" && formValues.email !== "" && formValues.password !== "");
+  const validation = (!!formErrors.name  || !!formErrors.password || !checked) || !(formValues.name !== "" && formValues.password !== "");
 
   return (
     <>
@@ -144,39 +153,6 @@ const Login = () => {
                 />
               </Grid>
             </Grid>
-            <Grid container className="container">
-              <Grid item>
-                <TextField
-                  label="מייל"
-                  name="email"
-                  onChange={handleChange}
-                  error={formErrors.email}
-                  helperText={formErrors.email}
-                  variant="outlined"
-                  margin="normal"
-                />
-              </Grid>
-            </Grid>
-            {/* <FormControl onChange={handleChange} value={formValues.password} sx={{ m: 1, width: '25ch' }} variant="outlined">
-        <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-        <OutlinedInput
-          id="outlined-adornment-password"
-          type={showPassword ? 'text' : 'password'}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
-                edge="end"
-              >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          }
-          label="Password"
-        />
-      </FormControl> */}
             <Grid container className="container">
               <Grid item>
                 <TextField
@@ -210,8 +186,28 @@ const Login = () => {
             מעונינת להצטרף למאגר השדכניות?
           </Typography>
           <Button onClick={handleRegisterClick} variant="outlined">להרשמה</Button>
+
+          {errorAfterSubmit && <Alert severity="error">{errorAfterSubmit}</Alert>}
+
         </Card>
       </div>
+      {showModal && <Dialog
+        open={showModal}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+        האם ידוע/ה לך על מועמדים לא רלוונטים?
+        </DialogTitle>
+        <DialogActions>
+          <Button onClick={handleClose}>לא ידוע לי</Button>
+          <Button onClick={handleOpenUnRellevantCandidate} autoFocus>
+            כן, אני רוצה לעדכן
+          </Button>
+        </DialogActions>
+      </Dialog>
+      }
     </>
   );
 };

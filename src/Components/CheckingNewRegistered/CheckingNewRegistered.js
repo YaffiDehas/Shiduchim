@@ -161,45 +161,11 @@ export default function CheckingNewRegistered() {
         <div className='CheckingNewRegistered'>
             <h4>{userType && userType === "matchMaker" ? 'בדיקת שדכניות חדשות' : 'בדיקת מועמדים חדשים'}</h4>
             <Box sx={{ height: 400, width: '100%' }}>
-                {/* <div className='actions'>
-                    <IconButton aria-label="delete" onClick={handleAddRegister}>
-                        <span>מחיקה ושליחת הודעה לנרשם</span>
-                        <DeleteIcon />
-                    </IconButton>
-                    <IconButton aria-label="add" onClick={handleAddRegister}>
-                        <span>אישור והוספה למאגר</span>
-                        <PersonAddAlt1Icon />
-                    </IconButton>
-                </div> */}
-                {/* <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    initialState={{
-                        pagination: {
-                            paginationModel: {
-                                pageSize: 5,
-                            },
-                        },
-                    }}
-                    onRowSelectionModelChange={(ids) => onRowsSelectionHandler(ids)}
-                    pageSizeOptions={[5]}
-                    checkboxSelection
-                    disableRowSelectionOnClick
-                /> */}
                 <DataGridPro
                     rows={rows}
                     columns={columns}
                     editMode="row"
                     rowModesModel={rowModesModel}
-                    // onRowModesModelChange={handleRowModesModelChange}
-                    // onRowEditStop={handleRowEditStop}
-                    // processRowUpdate={processRowUpdate}
-                // slots={{
-                //     toolbar: EditToolbar,
-                // }}
-                // slotProps={{
-                //     toolbar: { setRows, setRowModesModel },
-                // }}
                 />
             </Box>
         </div>
