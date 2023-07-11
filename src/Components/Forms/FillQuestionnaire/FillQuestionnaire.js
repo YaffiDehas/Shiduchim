@@ -1,5 +1,7 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Radio from '@mui/material/Radio';
@@ -7,36 +9,40 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import SendIcon from '@mui/material/IconButton';
+import FormHelperText from '@mui/material/FormHelperText';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
-import { Button, Grid, Card } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { Button, Grid, Card, Alert } from '@mui/material';
 import Header from '../../Header/Header';
 import Recomended from '../RecomendedPeople/Recomended';
 import InLaws from '../InLaws/InLaws';
-import { addRegister } from '../../../store/user/userActions';
 import './FillQuestionnaire.css';
 
+
 export default function FormPropsTextFields() {
-  const dispatch = useDispatch();
-  const data = useSelector((state) => state.user);
   const [form, setForm] = React.useState({ recomendedPeople: [], inLaws: [] });
   const [recomendForm, setRecomendForm] = React.useState([]);
   const [inLawsForm, setInLawsForm] = React.useState([]);
+  const [formErrors, setFormErrors] = useState({});
+  const [successRegistrationMessage, setSuccessRegistrationMessage] = useState(null);
+  const [errorAfterSubmit, setErrorAfterSubmit] = useState(null);
+
 
   const handleChangeInput = (e) => {
     const currentField = { [e.target.name]: e.target.value }
     setForm({ ...form, ...currentField });
+    setFormErrors({ ...formErrors, [e.target.name]: "" });
   }
 
   const handleChangeInputRecomended = (e) => {
     const currentField = { [e.target.name]: e.target.value }
     setRecomendForm({ ...recomendForm, ...currentField });
+    setFormErrors({ ...formErrors, [e.target.name]: "" });
   }
 
   const handleChangeInputInLaw = (e) => {
@@ -52,8 +58,6 @@ export default function FormPropsTextFields() {
     else {
       setForm({ ...form, recomendedPeople: [recomendForm] });
     }
-    console.log('form', form)
-
     setRecomendForm([]);
   }
 
@@ -70,22 +74,89 @@ export default function FormPropsTextFields() {
     setInLawsForm([]);
   }
 
-  const handleSubmitForm = () => {
+  const handleValidateStep = () => {
+    const RequiredFieldsStep1 = ['firstName', 'lastName', 'gender', 'age', 'familyStatus', 'bornDate', 'city', 'countryBirth', 'phone', 'email', 'characters', 'colorSkin', 'height', 'bodyStracture', 'healthCondition', 'economicSituation', 'clothingStyle', 'look', 'headdress', 'sector', 'origin', 'yeshivaOrSeminar', 'doingToday', 'fatherName', 'fatherDoing', 'motherName', 'motherDoing', 'mozaAv', 'mozaEm', 'siblings', 'parentStatus', 'halachaMethod'];
+    const RequiredFieldsStep2 = ['drishotSector', 'drishotLook', 'drishotFavoriteMoza', 'fromAge', 'mostAge', 'fromHeight', 'mostHeight'];
+    const RequiredFieldsStep3 = ['casherPhone', 'licence', 'smoking'];
+    const RequiredFieldsStep6 = ['fillQuestionarieName', 'fillQuestionariePhone', 'fillQuestionarieRelative'];
+
+    let errors = {};
+    const filledFields = Object.keys(form);
+    if (activeStep === 0) {
+      RequiredFieldsStep1.map((required) => {
+        const isFilled = filledFields.find((field) => field === required);
+        if (!isFilled) {
+          errors = { ...errors, [required]: "נא למלא שדה חובה" };
+        }
+        if (isFilled) {
+          errors = { ...errors, [required]: "" };
+        }
+      });
+    }
+    if (activeStep === 1) {
+      RequiredFieldsStep2.map((required) => {
+        const isFilled = filledFields.find((field) => field === required);
+        if (!isFilled) {
+          errors = { ...errors, [required]: "נא למלא שדה חובה" };
+        }
+        if (isFilled) {
+          errors = { ...errors, [required]: "" };
+        }
+      });
+    }
+    if (activeStep === 2) {
+      RequiredFieldsStep3.map((required) => {
+        const isFilled = filledFields.find((field) => field === required);
+        if (!isFilled) {
+          errors = { ...errors, [required]: "נא למלא שדה חובה" };
+        }
+        if (isFilled) {
+          errors = { ...errors, [required]: "" };
+        }
+      });
+    }
+    if (activeStep === 3) {
+      if (recomendForm.length === 0 && form.recomendedPeople.length === 0)
+        errors = { ...errors, recommendName: "נא למלא שדה חובה", recommendPhone: "נא למלא שדה חובה", recommendRelative: "נא למלא שדה חובה" }
+    }
+    if (activeStep === 5) {
+      RequiredFieldsStep6.map((required) => {
+        const isFilled = filledFields.find((field) => field === required);
+        if (!isFilled) {
+          errors = { ...errors, [required]: "נא למלא שדה חובה" };
+        }
+        if (isFilled) {
+          errors = { ...errors, [required]: "" };
+        }
+      });
+    }
+    const isNotValidStep = (errors !== {}) && Object.values(errors).find((error) => {
+      return error === "נא למלא שדה חובה"
+    }
+    );
+    setFormErrors(errors);
+    return isNotValidStep;
+  }
+
+  const handleSubmitForm = async () => {
+
     form.inLaws.push(inLawsForm);
     form.recomendedPeople.push(recomendForm);
-    if (!data.registers) {
-      dispatch(addRegister([{ ...form, id: 0 }]));
-    } else {
-      const registeredList = data.registers;
-      registeredList.push({ ...form, id: data.registers.length });
-      console.log(registeredList);
-      dispatch(addRegister(registeredList));
-      // TODO: שליחת פרטי טופס רישום מועמד
-    }
+
+    axios.post("http://localhost:5000/api/shiduchim/public/register-candidate", form)
+      .then(resp => {
+        if (resp.status === 201) {
+          setSuccessRegistrationMessage(resp.data.message);
+        }
+
+      }).catch(err => {
+        setErrorAfterSubmit(err.response.data.message)
+      })
   }
 
   const [activeStep, setActiveStep] = React.useState(0);
   const [skipped, setSkipped] = React.useState(new Set());
+  const [returnedBack, setReturenedBack] = React.useState(false);
 
   const isStepOptional = (step) => {
     return step === 4;
@@ -97,19 +168,26 @@ export default function FormPropsTextFields() {
 
   const handleNext = () => {
     let newSkipped = skipped;
-    if (isStepSkipped(activeStep)) {
-      newSkipped = new Set(newSkipped.values());
-      newSkipped.delete(activeStep);
+    if (activeStep === 3) {
+      handleAddRecomended();
     }
+    const isNotValidStep = handleValidateStep();
+    if (!isNotValidStep) {
+      if (isStepSkipped(activeStep)) {
+        newSkipped = new Set(newSkipped.values());
+        newSkipped.delete(activeStep);
+      }
 
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped(newSkipped);
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      setSkipped(newSkipped);
+    }
     if (activeStep === 6 || (activeStep + 1 === 6)) {
       handleSubmitForm();
     }
   };
 
   const handleBack = () => {
+    setReturenedBack(true);
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
@@ -128,9 +206,7 @@ export default function FormPropsTextFields() {
     });
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+
 
 
   return (
@@ -160,521 +236,29 @@ export default function FormPropsTextFields() {
             </Step>
 
           </Stepper>
-          {/* <div>
-        <Grid container spacing={{ xs: 2, md: 4 }}>
-          <Grid item>
-            <TextField
-              required
-              label="שם פרטי"
-              name="firstName"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="שם משפחה"
-              name="lastName"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="גיל"
-              name="age"
-              type="numer"
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מצב משפחתי"
-              name="familyStatus"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="תאריך לידה"
-              name="bornDate"
-              type="date"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="עיר"
-              name="city"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="טלפון"
-              name="telphone"
-              defaultValue=""
-              onChange={handleChangeInput}
-            /></Grid>
-          <Grid item>
-            <TextField
-              label="תכונות אופי"
-              name="characteristics"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="גוון עור"
-              name="skinTone"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="גובה"
-              name="height"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            /></Grid>
-          <Grid item>
-            <TextField
-              label="מבנה גוף"
-              name="bodyStructure"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מצב בריאותי"
-              name="healthCondition"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מצב כלכלי"
-              name="economicSituation"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="סגנון לבוש"
-              name="clothingStyle"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מראה כללי"
-              name="generalLook"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="כיסוי ראש"
-              name="HeadDress"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="שיוך מגזרי"
-              name="SectoralAssociation"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="תמונת המועמד"
-              name="pictue"
-              type="file"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="התחייבות כספית"
-              name="financialCommitment"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="דרישה כספית"
-              name="financialRequirement"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מקום לימודים"
-              name="placeOfStudy"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="רקע דתי"
-              name="religiousBackground          "
-              defaultValue=""
-              onChange={handleChangeInput}
-            /> </Grid>
-          <Grid item>
-            <TextField
-              label="עובד/לומד"
-              name="work/study"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="שם האב"
-              name="fatherName"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="עיסוק האב"
-              name="father'sOccupation"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="שם האם"
-              name="motherName"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="עיסוק האם"
-              name="mother'sOccupation"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מצוא האב"
-              name="father'sAncestry"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מוצא האם"
-              name="mother'sAncestry"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מס' אחים ואחיות"
-              name="numOfSistersAndBrothers"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="סטטוס הורים"
-              name="parent`sStatus"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="שיטה הלכתית"
-              name="HalachicMethod"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-        </Grid>
-        <Divider 
-        <h2>דרישות מבן/בת הזוג:</h2>
-        <Grid container spacing={2}>
-          <Grid item>
-            <TextField
-              label="שיוך מגזרי"
-              name="SectoralAssociation"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מראה כללי"
-              name="generalLook"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="תכונות אופי"
-              name="Characteristics"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="ארץ מוצא מועדף"
-              name="preferredCountryOfOrigin"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="לא ממוצא"
-              name="notOfOrigin"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מגיל"
-              name="fromAge"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="עד גיל"
-              name="tillAge"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="מגובה"
-              name="fromHeight"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="עד גובה"
-              name="tillHeight"
-              type="number"
-              defaultValue=""
-              onChange={handleChangeInput}
-            />
-          </Grid>
-        </Grid>
-        <Divider />
-        <Grid container>
-          <Grid item>
-            <FormControl>
-              <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת משקפיים?</FormLabel>
-              <RadioGroup
-                aria-labelledby="demo-radio-buttons-group-label"
-                defaultValue="no"
-                name="glasses"
-                onChange={handleChangeInput}
-              >
-                <FormControlLabel value="yes" control={<Radio />} label="כן" />
-                <FormControlLabel value="no" control={<Radio />} label="לא" />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl>
-              <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת טלפון כשר?</FormLabel>
-              <RadioGroup
-                aria-labelledby="demo-radio-buttons-group-label"
-                defaultValue="no"
-                name="kosherPhone"
-                onChange={handleChangeInput}
-              >
-                <FormControlLabel value="yes" control={<Radio />} label="כן" />
-                <FormControlLabel value="no" control={<Radio />} label="לא" />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl>
-              <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת מחשב?</FormLabel>
-              <RadioGroup
-                aria-labelledby="demo-radio-buttons-group-label"
-                defaultValue="no"
-                name="computer"
-                onChange={handleChangeInput}
-              >
-                <FormControlLabel value="yes" control={<Radio />} label="כן" />
-                <FormControlLabel value="no" control={<Radio />} label="לא" />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl>
-              <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת רישיון?</FormLabel>
-              <RadioGroup
-                aria-labelledby="demo-radio-buttons-group-label"
-                defaultValue="no"
-                name="license"
-                onChange={handleChangeInput}
-              >
-                <FormControlLabel value="yes" control={<Radio />} label="כן" />
-                <FormControlLabel value="no" control={<Radio />} label="לא" />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-        </Grid>
-        <Divider>מקורות לבירורים:</Divider>
-        <Grid container>
-          <Grid item>
-            <TextField
-              label="שם"
-              name="RecommendName"
-              onChange={handleChangeInputRecomended}
-              color="error"
-            />
-            <TextField
-              label="טלפון"
-              name="RecommendPhone"
-              onChange={handleChangeInputRecomended}
-              color="error"
-            />
-            <TextField
-              label="קרבה"
-              name="RecommendRelative"
-              onChange={handleChangeInputRecomended}
-              color="error"
-            />
-            {form.recomendedPeople && form.recomendedPeople.map((recomend, index) => <Recomended index={index + 1} data={recomend} handleChange={handleChangeInputRecomended} />)}
-            <Button onClick={handleAddRecomended}>Add</Button>
-          </Grid>
-        </Grid>
-        <Divider>:מחותנים</Divider>
-        <Grid container>
-          <Grid item>
-            <TextField
-              label="שם"
-              name="fatherInLawName"
-              defaultValue=""
-              onChange={handleChangeInputInLaw}
-            />
-            <TextField
-              label="טלפון"
-              name="fatherInLawPhone"
-              defaultValue=""
-              onChange={handleChangeInputInLaw}
-            />
-            <TextField
-              label="עיר"
-              name="fatherInLawCity"
-              defaultValue=""
-              onChange={handleChangeInputInLaw}
-            />
-          </Grid>
-        </Grid>
-        {form.inLaws && form.inLaws.map(() => <InLaws handleChange={handleChangeInputInLaw} />)}
-        <Button onClick={handleAddInLaws}>Add</Button>
-        <Divider>
-          <Grid container>
-            <Grid item>
-              <TextField
-                label="שם ממלא הטופס"
-                name="fillQuestionarieName"
-                onChange={handleChangeInput}
-              />
-              <TextField
-                label=" טלפון ממלא הטופס"
-                name="fillQuestionariePhone"
-                onChange={handleChangeInput}
-              />
-              <TextField
-                label=" קרבה למועמד"
-                name="fillQuestionarieRelative"
-                onChange={handleChangeInput}
-              />
-              <TextField
-                label="התחייבות לשדכנת"
-                name="commitmentToTheMatchmaker"
-                onChange={handleChangeInput}
-              />
-            </Grid>
-          </Grid>
-        </Divider>
-        <Button onClick={handleSubmitForm} variant="contained" endIcon={<SendIcon />}>
-          Send
-        </Button>
-      </div> */}
+
           <React.Fragment>
             {activeStep === 0 && (
-              <Grid container spacing={4}>
+              <Grid container spacing={2}>
                 <Grid item>
                   <TextField
                     required
                     label="שם פרטי"
                     name="firstName"
-                    defaultValue=""
+                    error={formErrors.firstName}
+                    helperText={formErrors.firstName}
+                    defaultValue={form.firstName}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="שם משפחה"
                     name="lastName"
-                    defaultValue=""
-                    onChange={handleChangeInput}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="שנת לידה"
-                    name="yearBorn"
-                    type="numer"
-                    onChange={handleChangeInput}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="מצב משפחתי"
-                    name="familyStatus"
-                    defaultValue=""
+                    error={formErrors.lastName}
+                    helperText={formErrors.lastName}
+                    defaultValue={form.lastName}
                     onChange={handleChangeInput}
                   />
                 </Grid>
@@ -682,318 +266,474 @@ export default function FormPropsTextFields() {
                   <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label">מין</InputLabel>
                     <Select
-                     name='gender'
+                      required
+                      name='gender'
                       label="מין"
                       onChange={handleChangeInput}
+                      error={formErrors.gender}
+                      helperText={formErrors.gender}
+                      defaultValue={form.gender}
                     >
                       <MenuItem value="זכר">זכר</MenuItem>
                       <MenuItem value="נקבה">נקבה</MenuItem>
                     </Select>
+                    {formErrors.gender && <FormHelperText>{formErrors.gender}</FormHelperText>}
                   </FormControl>
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
+                    label="גיל"
+                    name="age"
+                    type="number"
+                    error={formErrors.age}
+                    helperText={formErrors.age}
+                    defaultValue={form.age}
+                    onChange={handleChangeInput}
+                  />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    required
+                    label="מצב משפחתי"
+                    name="familyStatus"
+                    error={formErrors.familyStatus}
+                    helperText={formErrors.familyStatus}
+                    defaultValue={form.familyStatus}
+                    onChange={handleChangeInput}
+                  />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    required
                     label="תאריך לידה"
                     name="bornDate"
                     type="date"
-                    defaultValue=""
+                    error={formErrors.bornDate}
+                    helperText={formErrors.bornDate}
+                    defaultValue={form.bornDate}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="עיר"
                     name="city"
-                    defaultValue=""
+                    error={formErrors.city}
+                    helperText={formErrors.city}
+                    defaultValue={form.city}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
+                    label="ארץ לידה"
+                    name="countryBirth"
+                    error={formErrors.countryBirth}
+                    helperText={formErrors.countryBirth}
+                    defaultValue={form.countryBirth}
+                    onChange={handleChangeInput}
+                  />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    required
                     label="טלפון"
-                    name="telphone"
-                    defaultValue=""
+                    name="phone"
+                    error={formErrors.phone}
+                    helperText={formErrors.phone}
+                    defaultValue={form.phone}
                     onChange={handleChangeInput}
                   /></Grid>
                 <Grid item>
                   <TextField
+                    required
+                    label="מייל"
+                    name="email"
+                    error={formErrors.email}
+                    helperText={formErrors.email}
+                    defaultValue={form.email}
+                    onChange={handleChangeInput}
+                  /></Grid>
+                <Grid item>
+                  <TextField
+                    required
                     label="תכונות אופי"
-                    name="characteristics"
-                    defaultValue=""
+                    name="characters"
+                    error={formErrors.characters}
+                    helperText={formErrors.characters}
+                    defaultValue={form.characters}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="גוון עור"
-                    name="skinTone"
-                    defaultValue=""
+                    name="colorSkin"
+                    error={formErrors.colorSkin}
+                    helperText={formErrors.colorSkin}
+                    defaultValue={form.colorSkin}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="גובה"
                     name="height"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.colorSkin}
+                    helperText={formErrors.colorSkin}
+                    defaultValue={form.colorSkin}
                     onChange={handleChangeInput}
                   /></Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מבנה גוף"
-                    name="bodyStructure"
-                    defaultValue=""
+                    name="bodyStracture"
+                    error={formErrors.bodyStracture}
+                    helperText={formErrors.bodyStracture}
+                    defaultValue={form.bodyStracture}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מצב בריאותי"
                     name="healthCondition"
-                    defaultValue=""
+                    error={formErrors.healthCondition}
+                    helperText={formErrors.healthCondition}
+                    defaultValue={form.healthCondition}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מצב כלכלי"
                     name="economicSituation"
-                    defaultValue=""
+                    error={formErrors.economicSituation}
+                    helperText={formErrors.economicSituation}
+                    defaultValue={form.economicSituation}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="סגנון לבוש"
                     name="clothingStyle"
-                    defaultValue=""
+                    error={formErrors.clothingStyle}
+                    helperText={formErrors.clothingStyle}
+                    defaultValue={form.clothingStyle}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מראה כללי"
-                    name="generalLook"
-                    defaultValue=""
+                    name="look"
+                    error={formErrors.look}
+                    helperText={formErrors.look}
+                    defaultValue={form.look}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="כיסוי ראש"
-                    name="HeadDress"
-                    defaultValue=""
+                    name="headdress"
+                    error={formErrors.headdress}
+                    helperText={formErrors.headdress}
+                    defaultValue={form.headdress}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
-                  <TextField
-                    label="שיוך מגזרי"
-                    name="SectoralAssociation"
-                    defaultValue=""
-                    onChange={handleChangeInput}
-                  />
+                   <FormControl fullWidth>
+                    <InputLabel id="demo-simple-select-label">שיוך מגזרי</InputLabel>
+                    <Select
+                      required
+                      name='sector'
+                      label="שיוך מגזרי"
+                      onChange={handleChangeInput}
+                      error={formErrors.gender}
+                      helperText={formErrors.gender}
+                      defaultValue={form.gender}
+                    >
+                      <MenuItem value="ספרדי">ספרדי</MenuItem>
+                      <MenuItem value="חסידי">חסידי</MenuItem>
+                      <MenuItem value="ליטאי">ליטאי</MenuItem>
+                      <MenuItem value="תימני">תימני</MenuItem>
+
+                    </Select>
+                    {formErrors.sector && <FormHelperText>{formErrors.sector}</FormHelperText>}
+                  </FormControl>
                 </Grid>
                 <Grid item>
                   <TextField
-                    label="תמונת המועמד"
-                    name="pictue"
-                    type="file"
-                    defaultValue=""
+                    required
+                    label="עדה"
+                    name="origin"
+                    error={formErrors.origin}
+                    helperText={formErrors.origin}
+                    defaultValue={form.origin}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="התחייבות כספית"
-                    name="financialCommitment"
+                    name="commitMoney"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.commitMoney}
+                    helperText={formErrors.commitMoney}
+                    defaultValue={form.commitMoney}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="דרישה כספית"
-                    name="financialRequirement"
+                    name="requireMoney"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.requireMoney}
+                    helperText={formErrors.requireMoney}
+                    defaultValue={form.requireMoney}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
-                    label="מקום לימודים"
-                    name="placeOfStudy"
-                    defaultValue=""
+                    required
+                    label="מקום לימודים/עבודה"
+                    name="yeshivaOrSeminar"
+                    error={formErrors.yeshivaOrSeminar}
+                    helperText={formErrors.yeshivaOrSeminar}
+                    defaultValue={form.yeshivaOrSeminar}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
-                    label="רקע דתי"
-                    name="religiousBackground          "
-                    defaultValue=""
-                    onChange={handleChangeInput}
-                  /> </Grid>
-                <Grid item>
-                  <TextField
+                    required
                     label="עובד/לומד"
-                    name="work/study"
-                    defaultValue=""
+                    name="doingToday"
+                    error={formErrors.doingToday}
+                    helperText={formErrors.doingToday}
+                    defaultValue={form.doingToday}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="שם האב"
                     name="fatherName"
-                    defaultValue=""
+                    error={formErrors.fatherName}
+                    helperText={formErrors.fatherName}
+                    defaultValue={form.fatherName}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="עיסוק האב"
-                    name="father'sOccupation"
-                    defaultValue=""
+                    name="fatherDoing"
+                    error={formErrors.fatherDoing}
+                    helperText={formErrors.fatherDoing}
+                    defaultValue={form.fatherDoing}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="שם האם"
                     name="motherName"
-                    defaultValue=""
+                    error={formErrors.motherName}
+                    helperText={formErrors.motherName}
+                    defaultValue={form.motherName}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="עיסוק האם"
-                    name="mother'sOccupation"
-                    defaultValue=""
+                    name="motherDoing"
+                    error={formErrors.motherDoing}
+                    helperText={formErrors.motherDoing}
+                    defaultValue={form.motherDoing}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
-                    label="מצוא האב"
-                    name="father'sAncestry"
-                    defaultValue=""
+                    required
+                    label="מוצא האב"
+                    name="mozaAv"
+                    error={formErrors.mozaAv}
+                    helperText={formErrors.mozaAv}
+                    defaultValue={form.mozaAv}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מוצא האם"
-                    name="mother'sAncestry"
-                    defaultValue=""
+                    name="mozaEm"
+                    error={formErrors.mozaEm}
+                    helperText={formErrors.mozaEm}
+                    defaultValue={form.mozaEm}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מס' אחים ואחיות"
-                    name="numOfSistersAndBrothers"
+                    name="siblings"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.siblings}
+                    helperText={formErrors.siblings}
+                    defaultValue={form.siblings}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="סטטוס הורים"
-                    name="parent`sStatus"
-                    defaultValue=""
+                    name="parentStatus"
+                    error={formErrors.parentStatus}
+                    helperText={formErrors.parentStatus}
+                    defaultValue={form.parentStatus}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="שיטה הלכתית"
-                    name="HalachicMethod"
-                    defaultValue=""
+                    name="halachaMethod"
+                    error={formErrors.halachaMethod}
+                    helperText={formErrors.halachaMethod}
+                    defaultValue={form.halachaMethod}
                     onChange={handleChangeInput}
                   />
                 </Grid>
+
               </Grid>)}
             {activeStep === 1 && (
               <Grid container spacing={2}>
                 <Grid item>
                   <TextField
+                    required
                     label="שיוך מגזרי"
-                    name="SectoralAssociation"
-                    defaultValue=""
+                    name="drishotSector"
+                    error={formErrors.drishotSector}
+                    helperText={formErrors.drishotSector}
+                    defaultValue={form.drishotSector}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מראה כללי"
-                    name="generalLook"
-                    defaultValue=""
+                    name="drishotLook"
+                    error={formErrors.drishotLook}
+                    helperText={formErrors.drishotLook}
+                    defaultValue={form.drishotLook}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="תכונות אופי"
-                    name="Characteristics"
-                    defaultValue=""
+                    name="drishotCharacters"
+                    error={formErrors.drishotCharacters}
+                    helperText={formErrors.drishotCharacters}
+                    defaultValue={form.drishotCharacters}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="ארץ מוצא מועדף"
-                    name="preferredCountryOfOrigin"
-                    defaultValue=""
+                    name="drishotFavoriteMoza"
+                    error={formErrors.drishotFavoriteMoza}
+                    helperText={formErrors.drishotFavoriteMoza}
+                    defaultValue={form.drishotFavoriteMoza}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
                     label="לא ממוצא"
-                    name="notOfOrigin"
-                    defaultValue=""
+                    name="drishotNotMoza"
+                    error={formErrors.drishotNotMoza}
+                    helperText={formErrors.drishotNotMoza}
+                    defaultValue={form.drishotNotMoza}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מגיל"
                     name="fromAge"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.fromAge}
+                    helperText={formErrors.fromAge}
+                    defaultValue={form.fromAge}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="עד גיל"
-                    name="tillAge"
+                    name="mostAge"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.mostAge}
+                    helperText={formErrors.mostAge}
+                    defaultValue={form.mostAge}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="מגובה"
                     name="fromHeight"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.fromHeight}
+                    helperText={formErrors.fromHeight}
+                    defaultValue={form.fromHeight}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="עד גובה"
-                    name="tillHeight"
+                    name="mostHeight"
                     type="number"
-                    defaultValue=""
+                    error={formErrors.mostHeight}
+                    helperText={formErrors.mostHeight}
+                    defaultValue={form.mostHeight}
                     onChange={handleChangeInput}
                   />
                 </Grid>
@@ -1003,44 +743,17 @@ export default function FormPropsTextFields() {
               <Grid container spacing={2}>
                 <Grid item>
                   <FormControl>
-                    <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת משקפיים?</FormLabel>
-                    <RadioGroup
-                      aria-labelledby="demo-radio-buttons-group-label"
-                      defaultValue="no"
-                      name="glasses"
-                      onChange={handleChangeInput}
-                    >
-                      <FormControlLabel value="yes" control={<Radio />} label="כן" />
-                      <FormControlLabel value="no" control={<Radio />} label="לא" />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item>
-                  <FormControl>
                     <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת טלפון כשר?</FormLabel>
                     <RadioGroup
                       aria-labelledby="demo-radio-buttons-group-label"
-                      defaultValue="no"
-                      name="kosherPhone"
+                      defaultValue={form.casherPhone || "no"}
+                      name="casherPhone"
                       onChange={handleChangeInput}
                     >
                       <FormControlLabel value="yes" control={<Radio />} label="כן" />
                       <FormControlLabel value="no" control={<Radio />} label="לא" />
                     </RadioGroup>
-                  </FormControl>
-                </Grid>
-                <Grid item>
-                  <FormControl>
-                    <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת מחשב?</FormLabel>
-                    <RadioGroup
-                      aria-labelledby="demo-radio-buttons-group-label"
-                      defaultValue="no"
-                      name="computer"
-                      onChange={handleChangeInput}
-                    >
-                      <FormControlLabel value="yes" control={<Radio />} label="כן" />
-                      <FormControlLabel value="no" control={<Radio />} label="לא" />
-                    </RadioGroup>
+                    {formErrors.casherPhone && <FormHelperText>{formErrors.casherPhone}</FormHelperText>}
                   </FormControl>
                 </Grid>
                 <Grid item>
@@ -1048,13 +761,29 @@ export default function FormPropsTextFields() {
                     <FormLabel id="demo-radio-buttons-group-label">האם בעל/ת רישיון?</FormLabel>
                     <RadioGroup
                       aria-labelledby="demo-radio-buttons-group-label"
-                      defaultValue="no"
-                      name="license"
+                      defaultValue={form.licence || "no"}
+                      name="licence"
                       onChange={handleChangeInput}
                     >
                       <FormControlLabel value="yes" control={<Radio />} label="כן" />
                       <FormControlLabel value="no" control={<Radio />} label="לא" />
                     </RadioGroup>
+                    {formErrors.licence && <FormHelperText>{formErrors.licence}</FormHelperText>}
+                  </FormControl>
+                </Grid>
+                <Grid item>
+                  <FormControl>
+                    <FormLabel id="demo-radio-buttons-group-label">האם מעשן?</FormLabel>
+                    <RadioGroup
+                      aria-labelledby="demo-radio-buttons-group-label"
+                      defaultValue={form.smoking || "no"}
+                      name="smoking"
+                      onChange={handleChangeInput}
+                    >
+                      <FormControlLabel value="yes" control={<Radio />} label="כן" />
+                      <FormControlLabel value="no" control={<Radio />} label="לא" />
+                    </RadioGroup>
+                    {formErrors.smoking && <FormHelperText>{formErrors.smoking}</FormHelperText>}
                   </FormControl>
                 </Grid>
               </Grid>
@@ -1063,26 +792,42 @@ export default function FormPropsTextFields() {
               <Grid container spacing={2}>
                 <Grid item>
                   <TextField
+                    required
                     label="שם"
-                    name="RecommendName"
+                    name="recommendName"
+                    error={formErrors.recommendName}
+                    helperText={formErrors.recommendName}
+                    //defaultValue={recomendForm.recommendName}
                     onChange={handleChangeInputRecomended}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="טלפון"
-                    name="RecommendPhone"
+                    name="recommendPhone"
+                    error={formErrors.recommendPhone}
+                    helperText={formErrors.recommendPhone}
+                    //defaultValue={recomendForm.recommendName}
                     onChange={handleChangeInputRecomended}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label="קרבה"
-                    name="RecommendRelative"
+                    name="recommendRelative"
+                    error={formErrors.recommendRelative}
+                    helperText={formErrors.recommendRelative}
+                    // defaultValue={recomendForm.recommendRelative}
                     onChange={handleChangeInputRecomended}
                   />
                 </Grid>
-                {form.recomendedPeople && form.recomendedPeople.map((recomend, index) => <Recomended index={index + 1} data={recomend} handleChange={handleChangeInputRecomended} />)}
+                {form.recomendedPeople && form.recomendedPeople.map((recomend, index) => {
+                  if (recomend.recommendRelative || recomend.recommendPhone || recomend.recommendName) {
+                    return <Recomended key={index + 1} data={recomend} back={returnedBack} handleChange={handleChangeInputRecomended} />
+                  }
+                })}
                 <Button onClick={handleAddRecomended}>הוסף</Button>
               </Grid>
             )}
@@ -1091,6 +836,7 @@ export default function FormPropsTextFields() {
                 <Grid container spacing={2}>
                   <Grid item>
                     <TextField
+                      required
                       label="שם"
                       name="fatherInLawName"
                       defaultValue=""
@@ -1099,6 +845,7 @@ export default function FormPropsTextFields() {
                   </Grid>
                   <Grid item>
                     <TextField
+                      required
                       label="טלפון"
                       name="fatherInLawPhone"
                       defaultValue=""
@@ -1107,13 +854,14 @@ export default function FormPropsTextFields() {
                   </Grid>
                   <Grid item>
                     <TextField
+                      required
                       label="עיר"
                       name="fatherInLawCity"
                       defaultValue=""
                       onChange={handleChangeInputInLaw}
                     />
                   </Grid>
-                  {form.inLaws && form.inLaws.map(() => <InLaws handleChange={handleChangeInputInLaw} />)}
+                  {form.inLaws && form.inLaws.map((inLaw, index) => <InLaws key={index} data={inLaw} handleChange={handleChangeInputInLaw} />)}
                   <Button onClick={handleAddInLaws}>הוסף</Button>
                 </Grid>
               )
@@ -1122,29 +870,34 @@ export default function FormPropsTextFields() {
               <Grid container spacing={2}>
                 <Grid item>
                   <TextField
+                    required
                     label="שם ממלא הטופס"
                     name="fillQuestionarieName"
+                    error={formErrors.fillQuestionarieName}
+                    helperText={formErrors.fillQuestionarieName}
+                    defaultValue={form.fillQuestionarieName}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label=" טלפון ממלא הטופס"
                     name="fillQuestionariePhone"
+                    error={formErrors.fillQuestionariePhone}
+                    helperText={formErrors.fillQuestionariePhone}
+                    defaultValue={form.fillQuestionariePhone}
                     onChange={handleChangeInput}
                   />
                 </Grid>
                 <Grid item>
                   <TextField
+                    required
                     label=" קרבה למועמד"
                     name="fillQuestionarieRelative"
-                    onChange={handleChangeInput}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    label="התחייבות לשדכנת"
-                    name="commitmentToTheMatchmaker"
+                    error={formErrors.fillQuestionarieRelative}
+                    helperText={formErrors.fillQuestionarieRelative}
+                    defaultValue={form.fillQuestionarieRelative}
                     onChange={handleChangeInput}
                   />
                 </Grid>
@@ -1172,6 +925,11 @@ export default function FormPropsTextFields() {
             </Box>}
           </React.Fragment>
         </Card>
+        {successRegistrationMessage && <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+          {successRegistrationMessage}
+          <Link to="/CloseEngagedPage">לצפייה בכרטיסי שידוכים</Link>
+        </Typography>}
+        {errorAfterSubmit && <Alert severity="error">{errorAfterSubmit}</Alert>}
       </div>
     </>
   );

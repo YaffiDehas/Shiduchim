@@ -13,6 +13,8 @@ import Container from '@mui/material/Container';
 import { Grid } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { addFavoritedCandidate } from '../../store/matchMaker/matchMakerActions';
@@ -66,10 +68,18 @@ export default function SearchedCard(props) {
         <Card sx={{ maxWidth: 345, margin: 2, minWidth: 200, maxWidth: 300 }}>
             <CardHeader
                 action={
-                    <IconButton aria-label="favorite" onClick={handleAddToFavorite}>
-                        {addFavorited ? <FavoriteIcon /> :
-                            <FavoriteBorderIcon />}
-                    </IconButton>
+                    <>
+                        <IconButton aria-label="favorite" onClick={handleAddToFavorite}>
+                            {addFavorited ? <FavoriteIcon /> :
+                                <FavoriteBorderIcon />}
+                        </IconButton>
+                        {/* <IconButton aria-label="favorite" onClick={handleAddToFavorite}>
+                                <ContactMailIcon />
+                        </IconButton> */}
+                        <IconButton aria-label="favorite" onClick={handleAddToFavorite}>
+                                <DeleteIcon />
+                        </IconButton>
+                    </>
                 }
             />
             <CardContent>
@@ -80,15 +90,6 @@ export default function SearchedCard(props) {
                     {`גיל:${candidate.age}`}
                 </Typography>
             </CardContent>
-            {/* <CardActions disableSpacing>
-                        <div className='button'>
-                            <Button size="small" onClick={handleShowMore} >
-                                <Typography variant="h4" color="text.secondary">
-                                    {showMore ? '-' : '+'}
-                                </Typography>
-                            </Button>
-                        </div>
-                    </CardActions> */}
             <CardActions disableSpacing>
                 <ExpandMore
                     expand={expanded}
@@ -101,11 +102,99 @@ export default function SearchedCard(props) {
             </CardActions>
             <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>
-                    {Object.values(moreDetails).map((property) => {
-                        return (<Typography sx={{ fontSize: 14 }} color="text.secondary">
-                            {property}
-                        </Typography>);
-                    })}
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מין:${candidate.gender}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מצהב משפחתי:${candidate.familyStatus}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`תאריך לידה:${candidate.bornDate}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`עיר:${candidate.city}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`ארץ לידה:${candidate.countryBirth}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`טלפון:${candidate.phone}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מייל:${candidate.email}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`תכונות אופי:${candidate.characters}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`גוון עור:${candidate.colorSkin}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`גובה:${candidate.height}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מבנה גוף:${candidate.bodyStracture}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מצב בריאותי:${candidate.healthCondition}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מצב כלכלי:${candidate.economicSituation}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`סגנון לבוש:${candidate.clothingStyle}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מראה כללי:${candidate.look}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`כיסוי ראש:${candidate.headdress}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`שיוך מגזרי:${candidate.sector}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`עידה:${candidate.origin}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`התחיבות כספית:${candidate.commitMoney}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`דרישה כספית:${candidate.requireMoney}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מקוםלימודים/עבודה:${candidate.yeshivaOrSeminar}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`עובד/לומד:${candidate.doingToday}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`שם האב:${candidate.fatherName}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`עיסוק האב:${candidate.fatherDoing}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`שם האם:${candidate.motherName}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`עיסוק האם:${candidate.motherDoing}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מוצא אב:${candidate.mozaAv}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מוצא אם:${candidate.mozaEm}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`מס' אחים ואחיות:${candidate.siblings}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`סטטוס הורים:${candidate.parentStatus}`}
+                </Typography>
+                <Typography sx={{ fontSize: 14 }} color="text.secondary">
+                    {`שיטה הלכתית:${candidate.halachaMethod}`}
+                </Typography>
                 </CardContent>
             </Collapse>
         </Card>

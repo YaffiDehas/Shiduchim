@@ -10,11 +10,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Card from '@mui/material/Card';
 import { Alert, Button, Divider, Grid } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import Header from "../Header/Header";
 import { userLogin } from '../../store/user/userActions';
 import './Login.css';
@@ -36,15 +31,6 @@ const Login = () => {
   const params = new URLSearchParams(location.search);
   const userType = params.get("user");
 
-
-  // הודעה לבדיקת מועמדים לא רלוונטיים
-  const [showModal, setShowModal] = useState(true);
-  const handleClose = () => {
-    setShowModal(!showModal);
-}
-const handleOpenUnRellevantCandidate = () => {
-// בדיקה האם זה מנהל או שדכנית ולהעביר אותם דף בהאתם
-}
   const handleCheck = (event) => {
     setChecked(event.target.checked);
   };
@@ -191,23 +177,6 @@ const handleOpenUnRellevantCandidate = () => {
 
         </Card>
       </div>
-      {showModal && <Dialog
-        open={showModal}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-        האם ידוע/ה לך על מועמדים לא רלוונטים?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={handleClose}>לא ידוע לי</Button>
-          <Button onClick={handleOpenUnRellevantCandidate} autoFocus>
-            כן, אני רוצה לעדכן
-          </Button>
-        </DialogActions>
-      </Dialog>
-      }
     </>
   );
 };
