@@ -31,8 +31,14 @@ function ManagerPage() {
     setAnchorEl(null);
   };
 
-  const handleCheckingNews = () => {
-    navigate('/CheckingNewRegistered');
+  const handleCheckingNewRegisterd = (e) => {
+    navigate('/CheckingNews?eventType=newRegisters');
+  }
+  const handleCheckingNewCandidates = (e) => {
+    navigate('/CheckingNews?eventType=newCandidates');
+  }
+  const handleCheckingUnRelevantRegisterd = (e) => {
+    navigate('/CheckingNews?eventType=unrelevantRegisters');
   }
 
   const handleClick = (e) => {
@@ -89,9 +95,9 @@ function ManagerPage() {
                   'aria-labelledby': 'basic-button',
                 }}
               >
-                <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>בדיקת מועמדים לא רלוונטיים</MenuItem>
-                <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>בדיקת שדכנים חדשים</MenuItem>
-                <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNews}>בדיקת מועמדים חדשים</MenuItem>
+                <MenuItem name="checkingUnrelevantRegisterd" onClick={handleCheckingUnRelevantRegisterd}>בדיקת מועמדים לא רלוונטיים</MenuItem>
+                <MenuItem name="checkingNewCandidates" onClick={handleCheckingNewCandidates}>בדיקת שדכנים חדשים</MenuItem>
+                <MenuItem name="checkingNewRegisterd" onClick={handleCheckingNewRegisterd}>בדיקת מועמדים חדשים</MenuItem>
               </Menu>
             </Grid>
             <Grid item>

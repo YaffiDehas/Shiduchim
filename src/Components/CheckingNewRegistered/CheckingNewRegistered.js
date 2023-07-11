@@ -147,7 +147,9 @@ const columns = [
 export default function CheckingNewRegistered() {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
-    const userType = params.get("userType");
+    const eventType = params.get("eventType");
+    console.log(eventType);
+
     const data = useSelector((state) => state.user);
     const [selectedRows, setSelectedRows] = React.useState([]);
     const rows = data.registers;
@@ -159,7 +161,7 @@ export default function CheckingNewRegistered() {
         <>
         <Header />
         <div className='CheckingNewRegistered'>
-            <h4>{userType && userType === "matchMaker" ? 'בדיקת שדכניות חדשות' : 'בדיקת מועמדים חדשים'}</h4>
+         {/* <h4>{userType && userType === "matchMaker" ? 'בדיקת שדכניות חדשות' : 'בדיקת מועמדים חדשים'}</h4> */}
             <Box sx={{ height: 400, width: '100%' }}>
                 <DataGridPro
                     rows={rows}
