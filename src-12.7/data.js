@@ -1,6 +1,5 @@
 const data = [
     {
-        id: "45555",
         firstName: "דוד",
         lastName: "כהן",
         gender: "זכר",
@@ -90,7 +89,6 @@ const data = [
         ]
     },
     {
-        id: "232",
         firstName: "שרה",
         lastName: "אלחרר",
         gender: "נקבה",
@@ -160,7 +158,6 @@ const data = [
         ]
     },
     {
-        id: "43",
         firstName: "יעל",
         lastName: "משולמי",
         gender: "נקבה",
@@ -230,7 +227,6 @@ const data = [
         ]
     },
     {
-        id:"23",
         firstName: "חיים",
         lastName: "אלחרזי",
         gender: "זכר",

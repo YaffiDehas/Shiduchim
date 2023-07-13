@@ -36,7 +36,7 @@ function App() {
           <Route path="/StatisicsClosedMatchMakked" element={connectedUser && connectedUser.role === "manager"  ? <StatisicsClosedMatchMakked /> : <Navigate to="/login" />} />
           <Route path="/PersonalArea" element={connectedUser && connectedUser.role === "matchmaker" ? <PersonalArea /> : <Navigate to="/login" />} />
           <Route path="/MatchMakerPage" element={<MatchMakerPage />}/> 
-          <Route path="/CheckingNewRegistered" element={ <CheckingNewRegistered />} />
+          <Route path="/CheckingNewRegistered" elemeFnt={ <CheckingNewRegistered />} />
           <Route path="/CloseMatch" element={connectedUser && connectedUser.role === "matchmaker" ? <CloseMatch /> : <Navigate to="/login" />} />
           <Route path="/Engaged" element={<Engaged />} />
           <Route path="/CloseEngagedPage" element={<CloseEngagedPage />} />

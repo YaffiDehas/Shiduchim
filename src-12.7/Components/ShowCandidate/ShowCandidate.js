@@ -4,13 +4,42 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Modal from '@mui/material/Modal';
+import { styled } from '@mui/material/styles';
 import './ShowCandidate.css';
 
 export default function ShowCandidate(props) {
-    const { candidate } = props;
- 
+    const { candidate, show, handleClose } = props;
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+    };
     return (
+        <Modal
+            keepMounted
+            open={show}
+            onClose={handleClose}
+            aria-labelledby="keep-mounted-modal-title"
+            aria-describedby="keep-mounted-modal-description"
+        >
+            <Box sx={style}>
                 <Card sx={{ maxWidth: 345, margin: 2, minWidth: 200, maxWidth: 500 }}>
+                    <CardHeader>
+                        <Typography variant="h5" component="div">
+                            {`${candidate.firstName} ${candidate.lastName}`}
+                        </Typography>
+                        <Typography variant="h6" component="div">
+                            {`גיל:${candidate.age}`}
+                        </Typography>
+                    </CardHeader>
                     <CardContent>
                         <Grid container columns={{ md: 12 }}>
                             {candidate.gender && <Grid item xs={2} sm={4} md={4}>
@@ -245,13 +274,13 @@ export default function ShowCandidate(props) {
                             {candidate.fromHeight && <Grid item xs={2} sm={4} md={4}>
                                 <Typography>מגובה:</Typography>
                                 <Typography sx={{ fontSize: 14 }} color="text.secondary">
-                                    {candidate.fromHeight}
+                                    {candidate.fromHeight.toFixed(2)}
                                 </Typography>
                             </Grid>}
                             {candidate.mostHeight && <Grid item xs={2} sm={4} md={4}>
                                 <Typography>עד גובה:</Typography>
                                 <Typography sx={{ fontSize: 14 }} color="text.secondary">
-                                    {candidate.mostHeight}
+                                    {candidate.mostHeight.toFixed(2)}
                                 </Typography>
                             </Grid>}
                             <Grid container><Typography variant="h6" component="div">פרטים נוספים:</Typography></Grid>
@@ -346,5 +375,7 @@ export default function ShowCandidate(props) {
                         </Grid>
                     </CardContent>
                 </Card >
+            </Box>
+        </Modal >
     );
 }
