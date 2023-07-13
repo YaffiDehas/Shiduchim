@@ -1,166 +1,60 @@
 import { React, useState } from "react"
 import './CloseMatch.css';
-import Autocomplete from '@mui/material/Autocomplete';
 import { useSelector, useDispatch } from 'react-redux';
 import TextField from '@mui/material/TextField';
 import Card from '@mui/material/Card';
-import { Button, Divider, Grid } from '@mui/material';
+import { Alert, Button, Divider, Grid } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { closedMatched } from '../../store/matchMaker/matchMakerActions';
+import { closedMatched, deleteCandidate } from '../../store/matchMaker/matchMakerActions';
 import Header from "../Header/Header";
-
-const top100Films = [
-    { label: 'The Shawshank Redemption', year: 1994 },
-    { label: 'The Godfather', year: 1972 },
-    { label: 'The Godfather: Part II', year: 1974 },
-    { label: 'The Dark Knight', year: 2008 },
-    { label: '12 Angry Men', year: 1957 },
-    { label: "Schindler's List", year: 1993 },
-    { label: 'Pulp Fiction', year: 1994 },
-    {
-        label: 'The Lord of the Rings: The Return of the King',
-        year: 2003,
-    },
-    { label: 'The Good, the Bad and the Ugly', year: 1966 },
-    { label: 'Fight Club', year: 1999 },
-    {
-        label: 'The Lord of the Rings: The Fellowship of the Ring',
-        year: 2001,
-    },
-    {
-        label: 'Star Wars: Episode V - The Empire Strikes Back',
-        year: 1980,
-    },
-    { label: 'Forrest Gump', year: 1994 },
-    { label: 'Inception', year: 2010 },
-    {
-        label: 'The Lord of the Rings: The Two Towers',
-        year: 2002,
-    },
-    { label: "One Flew Over the Cuckoo's Nest", year: 1975 },
-    { label: 'Goodfellas', year: 1990 },
-    { label: 'The Matrix', year: 1999 },
-    { label: 'Seven Samurai', year: 1954 },
-    {
-        label: 'Star Wars: Episode IV - A New Hope',
-        year: 1977,
-    },
-    { label: 'City of God', year: 2002 },
-    { label: 'Se7en', year: 1995 },
-    { label: 'The Silence of the Lambs', year: 1991 },
-    { label: "It's a Wonderful Life", year: 1946 },
-    { label: 'Life Is Beautiful', year: 1997 },
-    { label: 'The Usual Suspects', year: 1995 },
-    { label: 'Léon: The Professional', year: 1994 },
-    { label: 'Spirited Away', year: 2001 },
-    { label: 'Saving Private Ryan', year: 1998 },
-    { label: 'Once Upon a Time in the West', year: 1968 },
-    { label: 'American History X', year: 1998 },
-    { label: 'Interstellar', year: 2014 },
-    { label: 'Casablanca', year: 1942 },
-    { label: 'City Lights', year: 1931 },
-    { label: 'Psycho', year: 1960 },
-    { label: 'The Green Mile', year: 1999 },
-    { label: 'The Intouchables', year: 2011 },
-    { label: 'Modern Times', year: 1936 },
-    { label: 'Raiders of the Lost Ark', year: 1981 },
-    { label: 'Rear Window', year: 1954 },
-    { label: 'The Pianist', year: 2002 },
-    { label: 'The Departed', year: 2006 },
-    { label: 'Terminator 2: Judgment Day', year: 1991 },
-    { label: 'Back to the Future', year: 1985 },
-    { label: 'Whiplash', year: 2014 },
-    { label: 'Gladiator', year: 2000 },
-    { label: 'Memento', year: 2000 },
-    { label: 'The Prestige', year: 2006 },
-    { label: 'The Lion King', year: 1994 },
-    { label: 'Apocalypse Now', year: 1979 },
-    { label: 'Alien', year: 1979 },
-    { label: 'Sunset Boulevard', year: 1950 },
-    {
-        label: 'Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb',
-        year: 1964,
-    },
-    { label: 'The Great Dictator', year: 1940 },
-    { label: 'Cinema Paradiso', year: 1988 },
-    { label: 'The Lives of Others', year: 2006 },
-    { label: 'Grave of the Fireflies', year: 1988 },
-    { label: 'Paths of Glory', year: 1957 },
-    { label: 'Django Unchained', year: 2012 },
-    { label: 'The Shining', year: 1980 },
-    { label: 'WALL·E', year: 2008 },
-    { label: 'American Beauty', year: 1999 },
-    { label: 'The Dark Knight Rises', year: 2012 },
-    { label: 'Princess Mononoke', year: 1997 },
-    { label: 'Aliens', year: 1986 },
-    { label: 'Oldboy', year: 2003 },
-    { label: 'Once Upon a Time in America', year: 1984 },
-    { label: 'Witness for the Prosecution', year: 1957 },
-    { label: 'Das Boot', year: 1981 },
-    { label: 'Citizen Kane', year: 1941 },
-    { label: 'North by Northwest', year: 1959 },
-    { label: 'Vertigo', year: 1958 },
-    {
-        label: 'Star Wars: Episode VI - Return of the Jedi',
-        year: 1983,
-    },
-    { label: 'Reservoir Dogs', year: 1992 },
-    { label: 'Braveheart', year: 1995 },
-    { label: 'M', year: 1931 },
-    { label: 'Requiem for a Dream', year: 2000 },
-    { label: 'Amélie', year: 2001 },
-    { label: 'A Clockwork Orange', year: 1971 },
-    { label: 'Like Stars on Earth', year: 2007 },
-    { label: 'Taxi Driver', year: 1976 },
-    { label: 'Lawrence of Arabia', year: 1962 },
-    { label: 'Double Indemnity', year: 1944 },
-    {
-        label: 'Eternal Sunshine of the Spotless Mind',
-        year: 2004,
-    },
-    { label: 'Amadeus', year: 1984 },
-    { label: 'To Kill a Mockingbird', year: 1962 },
-    { label: 'Toy Story 3', year: 2010 },
-    { label: 'Logan', year: 2017 },
-    { label: 'Full Metal Jacket', year: 1987 },
-    { label: 'Dangal', year: 2016 },
-    { label: 'The Sting', year: 1973 },
-    { label: '2001: A Space Odyssey', year: 1968 },
-    { label: "Singin' in the Rain", year: 1952 },
-    { label: 'Toy Story', year: 1995 },
-    { label: 'Bicycle Thieves', year: 1948 },
-    { label: 'The Kid', year: 1921 },
-    { label: 'Inglourious Basterds', year: 2009 },
-    { label: 'Snatch', year: 2000 },
-    { label: '3 Idiots', year: 2009 },
-    { label: 'Monty Python and the Holy Grail', year: 1975 },
-];
+import Autocomplete from '@mui/material/Autocomplete';
+import axios from "axios";
+import { Link } from "react-router-dom";
 
 const CloseMatch = () => {
-    const dispatch = useDispatch();
-    const data = useSelector((state) => state.matchMaker);
 
-    const [formValues, setFormValues] = useState({});
-    const [files, setFiles] = useState([]);;
+    const dispatch = useDispatch();
+    const token = useSelector((state) => state.user.currentUser.token);
+
+    const candidates = useSelector((state) => state.user.candidates);
+    const bachurNames = candidates.filter(cand => cand.gender === "זכר").map(cand => ({ _id: cand._id, name: cand.firstName + " " + cand.lastName }));
+    const bachuraNames = candidates.filter(cand => cand.gender === "נקבה").map(cand => ({ _id: cand._id, name: cand.firstName + " " + cand.lastName }));
+    const [valBachur, setValBachur] = useState({}) //ערך בשדה השלמה אוטומטית בחור
+    const [valBachura, setValBachura] = useState({}) //ערך בשדה השלמה אוטומטית בחורה
+    const [formValues, setFormValues] = useState({}); //ערכים בשאר השדות
+
+    const [successCloseShiduchMessage, setSuccessCloseShiduchMessage] = useState(null);
+    const [errorAfterSubmit, setErrorAfterSubmit] = useState(null);
+  
 
     const handleChange = (event) => {
+        setErrorAfterSubmit(null)
         const { name, value } = event.target;
         setFormValues({ ...formValues, [name]: value });
+
     };
 
     const handleSubmit = (event) => {
+
         event.preventDefault();
-        console.log(files)
-        console.log(formValues);
-        if (!data.closedRegisters) {
-            dispatch(closedMatched([{ ...formValues, Images: files }]));
-        } else {
-            const newMatch = { ...formValues, Images: files };
-            const closedRegisterList = data.closedRegisters;
-            closedRegisterList.push({ ...newMatch });
-            dispatch(closedMatched(closedRegisterList));
-            // TODO: שליחת פרטים טופס סגירת שידוך
-        }
+
+        const meorasimObj = { ...formValues, bachurId: valBachur._id, bachuraId: valBachura._id, bachurName: valBachur.name, bachuraName: valBachura.name }
+
+        axios.post("http://localhost:5000/api/shiduchim/matchmaker/closing-match", meorasimObj, {
+            headers: { 'x-access-token': token }
+        }).then(resp => {
+            if (resp.status === 201) {
+                
+                dispatch(closedMatched(meorasimObj))   //עדכון טבלת מאורסים ברידקס
+                dispatch(deleteCandidate(meorasimObj.bachurId))//מחיקת בחור מטבלת מועמדים
+                dispatch(deleteCandidate(meorasimObj.bachuraId))//מחיקת בחורה מטבלת מועמדים
+
+                setSuccessCloseShiduchMessage(`${resp.data.message1}. ${resp.data.message2}. ${resp.data.message3}.`);
+                
+            }
+        }).catch(err => {
+            setErrorAfterSubmit(err.response.data.message)
+        })
     };
 
     return (
@@ -173,17 +67,15 @@ const CloseMatch = () => {
                         <Grid container spacing={2}>
                             <Grid item>
                                 <Autocomplete
+                                    onChange={(event, value) => setValBachur(value)}
                                     disablePortal
-                                    id="combo-box-demo"
-                                    options={top100Films}
-                                    sx={{ width: 200 }}
-                                    renderInput={(params) =>
-                                        <TextField {...params}
-                                            label="שם החתן"
-                                            name="bachurName"
-                                            onChange={handleChange}
-                                            variant="outlined"
-                                            margin="normal" />}
+                                    name="bachurName"
+                                    id="combo-box-bachurNames"
+                                    options={bachurNames}
+                                    getOptionLabel={(option) => option.name}
+                                    sx={{ marginTop: 2, width: 250 }}
+                                    renderInput={(params) => <TextField {...params} label=" שם החתן" required />}
+                                    required
                                 />
                             </Grid>
                             <Grid item>
@@ -193,15 +85,7 @@ const CloseMatch = () => {
                                     onChange={handleChange}
                                     variant="outlined"
                                     margin="normal"
-                                />
-                            </Grid>
-                            <Grid item>
-                                <TextField
-                                    label="גיל"
-                                    name="ageChatan"
-                                    onChange={handleChange}
-                                    variant="outlined"
-                                    margin="normal"
+                                    required
                                 />
                             </Grid>
                             <Grid item>
@@ -211,6 +95,7 @@ const CloseMatch = () => {
                                     onChange={handleChange}
                                     variant="outlined"
                                     margin="normal"
+                                    required
                                 />
                             </Grid>
                             <Grid item>
@@ -220,25 +105,25 @@ const CloseMatch = () => {
                                     onChange={handleChange}
                                     variant="outlined"
                                     margin="normal"
+                                    required
                                 />
                             </Grid>
                         </Grid>
                         <Divider></Divider>
-                        <Grid container spacing={4}>
+                        <Grid container spacing={2}>
                             <Grid item>
                                 <Autocomplete
+                                    onChange={(event, value) => setValBachura(value)}
                                     disablePortal
-                                    id="combo-box-demo"
-                                    options={top100Films}
-                                    sx={{ width: 200 }}
-                                    renderInput={(params) =>
-                                        <TextField {...params}
-                                            label="שם הכלה"
-                                            name="bachuraName"
-                                            onChange={handleChange}
-                                            variant="outlined"
-                                            margin="normal" />}
+                                    name="bachuraName"
+                                    id="combo-box-bachuraNames"
+                                    options={bachuraNames}
+                                    getOptionLabel={(option) => option.name}
+                                    sx={{ marginTop: 2, width: 250 }}
+                                    renderInput={(params) => <TextField {...params} label="שם הכלה" required />}
+
                                 />
+
                             </Grid>
                             <Grid item>
                                 <TextField
@@ -247,15 +132,7 @@ const CloseMatch = () => {
                                     onChange={handleChange}
                                     variant="outlined"
                                     margin="normal"
-                                />
-                            </Grid>
-                            <Grid item>
-                                <TextField
-                                    label="גיל"
-                                    name="ageCala"
-                                    onChange={handleChange}
-                                    variant="outlined"
-                                    margin="normal"
+                                    required
                                 />
                             </Grid>
                             <Grid item>
@@ -265,6 +142,7 @@ const CloseMatch = () => {
                                     onChange={handleChange}
                                     type='text'
                                     margin="normal"
+                                    required
                                 />
                             </Grid>
                             <Grid item>
@@ -274,6 +152,7 @@ const CloseMatch = () => {
                                     onChange={handleChange}
                                     variant="outlined"
                                     margin="normal"
+                                    required
                                 />
                             </Grid>
                         </Grid>
@@ -281,17 +160,23 @@ const CloseMatch = () => {
                             <Grid item>
                                 <TextField
                                     label="תאריך סגירת שידוך"
-                                    name="dateWort"
                                     type="date"
+                                    name="dateWort"
                                     onChange={handleChange}
                                     variant="outlined"
                                     margin="normal"
+                                    required
                                 />
                             </Grid>
                         </Grid>
 
                         <Button type="submit" variant="contained">שליחה</Button>
+                        {errorAfterSubmit && <Alert severity="error">{errorAfterSubmit}</Alert>}
                     </form>
+                    {successCloseShiduchMessage && <Alert severity="success" >
+                        {successCloseShiduchMessage}
+                        <Link to="/CloseEngagedPage">לצפייה בכרטיסי שידוכים</Link>
+                    </Alert>}
                 </Card>
             </div>
         </>

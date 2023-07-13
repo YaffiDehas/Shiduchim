@@ -1,44 +1,35 @@
 import { React, useState } from "react"
 import axios from "axios";
 import './Register.css';
-import { useSearchParams, useLocation, Link } from "react-router-dom"
-import { useSelector, useDispatch } from 'react-redux';
+import { Link } from "react-router-dom"
 import TextField from '@mui/material/TextField';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Checkbox from '@mui/material/Checkbox';
 import Card from '@mui/material/Card';
-import { Alert, Button, Divider, Grid } from '@mui/material';
+import { Alert, Button, Grid } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Header from '../Header/Header';
-import { addRegister } from '../../store/user/userActions';
-
 
 const Register = () => {
-    const dispatch = useDispatch();
-    const user = useSelector((state) => state.user)
     const [formValues, setFormValues] = useState({
         lastName: '',
         email: '',
         firstName: '',
     });
     const [formErrors, setFormErrors] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
+    // const [showPassword, setShowPassword] = useState(false);
     const [checked, setChecked] = useState(false);
     const [successRegistrationMessage, setSuccessRegistrationMessage] = useState(null);
     const [errorAfterSubmit, setErrorAfterSubmit] = useState(null);
-    const location = useLocation();
-    const params = new URLSearchParams(location.search);
-    const userType = params.get("userType");
+  
 
     const handleCheck = (event) => {
         setChecked(event.target.checked);
     };
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
+    // const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
-    };
+    // const handleMouseDownPassword = (event) => {
+    //     event.preventDefault();
+    // };
     const handleChange = (event) => {
         setErrorAfterSubmit(null)
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -73,14 +64,8 @@ const Register = () => {
         event.preventDefault();
         const errors = validateForm();
         if (!errors) {
-            if (!user.registers) {
-                dispatch(addRegister([{ ...formValues, id: 0 }]));
-            } else {
-                const newRegister = { ...formValues, id: user.registers.length };
-                const registeredList = user.registers;
-                registeredList.push({ ...newRegister });
-                dispatch(addRegister(registeredList));
-            }
+
+            //אחרי הרשמה צריך לעשות דיספטש למערך שדכנים חדשים
             // Handle form submission
             axios.post("http://localhost:5000/api/shiduchim/public/register-matchmaker", {
                 firstName: formValues.firstName,
@@ -88,7 +73,7 @@ const Register = () => {
                 email: formValues.email,
                 age: formValues.age,
                 phone: formValues.phone,
-                livingPlace: formValues.livingPlace
+                city: formValues.city
             })
                 .then(resp => {
                     if (resp.status === 201) {
@@ -97,7 +82,6 @@ const Register = () => {
                 })
                 .catch(err => {
                     setErrorAfterSubmit(err.response.data.message)
-                    //.navigate('/FillQuestionnaire')
                 })
         } else {
             setFormErrors(errors);
@@ -138,7 +122,6 @@ const Register = () => {
             <div id="Register">
                 <Card variant="outlined">
                     <Typography variant="h4" component="div">
-                        {/* {userType === "matchMaker"? 'רישום שדכנית': 'רישום מועמד'} */}
                         הרשמה
                     </Typography>
                     <form onSubmit={handleSubmit}>
@@ -202,35 +185,16 @@ const Register = () => {
                             <Grid item>
                                 <TextField
                                     label="אזור מגורים"
-                                    name="livingPlace"
+                                    name="city"
                                     onChange={handleChange}
-                                    error={formErrors.livingPlace}
-                                    helperText={formErrors.livingPlace}
+                                    error={formErrors.city}
+                                    helperText={formErrors.city}
                                     variant="outlined"
                                     margin="normal"
                                 />
                             </Grid>
                         </Grid>
-                        {/* <FormControl onChange={handleChange} value={formValues.password} sx={{ m: 1, width: '25ch' }} variant="outlined">
-        <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-        <OutlinedInput
-          id="outlined-adornment-password"
-          type={showPassword ? 'text' : 'password'}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
-                edge="end"
-              >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          }
-          label="Password"
-        />
-      </FormControl> */}
+                   
                         <Grid container className="container">
                             <Grid item>
                                 <TextField
@@ -261,11 +225,12 @@ const Register = () => {
                         {errorAfterSubmit && <Alert severity="error">{errorAfterSubmit}</Alert>}
 
                     </form>
-                </Card>
-                {successRegistrationMessage && <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                    {successRegistrationMessage && <Alert severity="success" >
                     {successRegistrationMessage}
                     <Link to="/CloseEngagedPage">לצפייה בכרטיסי שידוכים</Link>
-                </Typography>}
+                </Alert>}
+                </Card>
+              
             </div>
         </>
     );

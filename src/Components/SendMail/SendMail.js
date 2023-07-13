@@ -13,41 +13,55 @@ import Typography from '@mui/joy/Typography';
 import TextField from '@mui/material/TextField/TextField';
 import { saveMessage } from '../../store/manager/managerActions';
 import './SendMail.css';
+import axios from 'axios';
+import { useState } from 'react';
+import toast from 'toast-me';
+import { Alert } from '@mui/material';
 
 export default function SendEmail({ show, handleClose }) {
+
     const dispatch = useDispatch();
-    const data = useSelector((state) => state.manager);
-    const [message, setMessage] = React.useState({
-        subject: '',
-        body: ''
+    const token = useSelector((state) => state.user.currentUser.token);
+    const [errorAfterSubmit, setErrorAfterSubmit] = useState(null);
+
+    const [message, setMessage] = useState({
+        nameOfSender: '',
+        emailofSender: '',
+        textMessage: ''
     });
 
     const handleChangeSubject = (e) => {
-        setMessage({ ...message, subject: e.target.value });
+        setMessage({ ...message, nameOfSender: e.target.value });
     }
     const addEmoji = (emoji) => () => {
-        const newbody = message.body + emoji;
-        setMessage({ ...message, body: newbody });
+        const newbody = message.textMessage + emoji;
+        setMessage({ ...message, textMessage: newbody });
     }
 
-    const handleCloseModal =() => {
+    const handleCloseModal = () => {
         handleClose();
     }
 
     const handleChangeBody = (e) => {
-        setMessage({ ...message, body: e.target.value });
+        setMessage({ ...message, textMessage: e.target.value });
+    }
+
+    const handleChangeEmail = (e) => {
+        setMessage({ ...message, emailofSender: e.target.value });
     }
 
     const handleSendEmail = () => {
-        if (!data.messages) {
-            dispatch(saveMessage([{ id: 0, from: "yufi@sjdls", ...message }]));
-        } else {
-            const messages = data.messages;
-            messages.push({ id: messages.length, from: "ndkwn@jklj", ...message });
-            // TODO: שמירת ההודעה למנהל
-            dispatch(saveMessage(messages));
-            handleClose(false);
-        }
+        axios.post("http://localhost:5000/api/shiduchim/matchmaker/message", message, {
+            headers: { 'x-access-token': token }
+        }).then(resp => {
+            if (resp.status === 201) {
+                toast(resp.data.message, { duration: 5000 })
+                dispatch(saveMessage(resp.data.newMessage)); //שמירת הודעה ברידקס
+                handleClose(false);
+            }
+        }).catch(err => {
+            setErrorAfterSubmit(err.response.data.message)
+        })
     }
     return (
         <Dialog
@@ -58,17 +72,31 @@ export default function SendEmail({ show, handleClose }) {
         >
             <DialogTitle id="alert-dialog-title">
                 <TextField
-                    label="נושא"
-                    name="subject"
+                    label="שם השולח"
+                    name="nameOfSender"
                     onChange={handleChangeSubject}
                     variant="outlined"
-                    margin="normal" />
+                    margin="normal"
+                    required
+                />
+            </DialogTitle>
+            <DialogTitle id="alert-dialog-title">
+                <TextField
+                    label="מייל"
+                    name="emailofSender"
+                    onChange={handleChangeEmail}
+                    variant="outlined"
+                    margin="normal"
+                    required
+                />
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="alert-dialog-description">
                     <Textarea
+                        required
                         placeholder="הקלד כאן את גוף ההודעה...."
-                        value={message.body}
+                        name="textMessage"
+                        value={message.textMessage}
                         onChange={handleChangeBody}
                         minRows={2}
                         maxRows={4}
@@ -96,7 +124,7 @@ export default function SendEmail({ show, handleClose }) {
                         }
                         endDecorator={
                             <Typography level="body3" sx={{ ml: 'auto' }}>
-                                {message.body.length} character(s)
+                                {message.textMessage.length} character(s)
                             </Typography>
                         }
                         sx={{ minWidth: 300 }}
@@ -108,6 +136,7 @@ export default function SendEmail({ show, handleClose }) {
                     שלח
                 </Button>
             </DialogActions>
+                {errorAfterSubmit && <Alert severity="error">{errorAfterSubmit}</Alert>}
         </Dialog>
     );
 }

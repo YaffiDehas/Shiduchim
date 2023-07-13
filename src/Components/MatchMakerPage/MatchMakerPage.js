@@ -1,41 +1,81 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { redirect } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import rings2 from '../../assets/rings2.jpg';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import LogoutIcon from '@mui/icons-material/Logout';
 import './MatchMakerPage.css';
 import SendEmail from '../SendMail/SendMail';
+import { loadCandidates } from '../../store/user/userActions';
+import axios from "axios";
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import logo from '../../assets/logo.png';
 
-const ImageSrc = styled('span')({
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center 40%',
-});
 function MatchMakerPage() {
-  const navigate = useNavigate();
-  const [showSendMessagemodal, setShowSendMessageModal] = useState(false);
 
+  const ImageSrc = styled('span')({
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center 40%',
+  });
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const currentUser = useSelector((state) => state.user.currentUser);
+
+  const [showSendMessagemodal, setShowSendMessageModal] = useState(false);
   // הודעה לבדיקת מועמדים לא רלוונטיים
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const handleClose = () => {
     setShowModal(!showModal);
-}
-const handleOpenUnRellevantCandidate = () => {
-  navigate('/PersonalArea');
-}
+  }
+  const handleOpenUnRellevantCandidate = () => {
+    navigate('/PersonalArea');
+  }
 
+
+  //שליפת מועמדים מהשרת 
+  useEffect(() => {
+    //בדיקה האם זה כניסה ראשונית לדף
+    const isFirstEnter = window.sessionStorage.getItem("firstEnter");
+    if (!isFirstEnter) {
+      window.sessionStorage.setItem("firstEnter", true);
+      setShowModal(true);
+    }
+    else {
+      setShowModal(false)
+    }
+    const getCandidatesFromServer = async () => {
+      try {
+        const resp = await axios.get(`http://localhost:5000/api/shiduchim/${currentUser.role}/candidates-cards`, {
+          headers: { 'x-access-token': currentUser.token }
+        });
+        const allCandidates = resp.data.candidates;
+        const aproveCandidates = allCandidates.filter(cand => cand.isApproved === true);
+        dispatch(loadCandidates(aproveCandidates));
+      } catch (error) {
+        console.error('Error retrieving messages:', error);
+      }
+    }
+    getCandidatesFromServer();
+  }, [dispatch])
+
+  const handleLogout = () => {
+    navigate('/');
+}
+  const handleBackToHomePage = () => {
+    navigate('/MatchMakerPage');
+  }
   const handleClick = (e) => {
     console.log(e.target.name);
     switch (e.target.name) {
@@ -60,12 +100,14 @@ const handleOpenUnRellevantCandidate = () => {
     }
   }
 
-  const handleCloseModal = () => {
-    setShowSendMessageModal(!showSendMessagemodal);
-  }
-
   return (
     <>
+      <div className='header' style={{ backgroundImage: `url(${logo})` }} onClick={handleBackToHomePage} >
+        <Button variant="contained" onClick={handleLogout}>
+        <LogoutIcon />
+          יציאה
+        </Button>
+      </div>
       <div id="app">
         <Box sx={{ display: 'flex', flexWrap: 'wrap', minWidth: 300, width: '100%' }}>
           <div className='actions'>
@@ -89,7 +131,7 @@ const handleOpenUnRellevantCandidate = () => {
           </div>
           <ImageSrc style={{ backgroundImage: `url(${rings2})` }} />
         </Box>
-        <SendEmail show={showSendMessagemodal} handleClose={handleCloseModal} />
+        <SendEmail show={showSendMessagemodal} handleClose={setShowSendMessageModal} />
       </div>
       {showModal && <Dialog
         open={showModal}
@@ -109,6 +151,7 @@ const handleOpenUnRellevantCandidate = () => {
       </Dialog>
       }
     </>
+
   );
 }
 

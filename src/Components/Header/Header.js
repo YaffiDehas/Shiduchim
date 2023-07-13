@@ -2,8 +2,7 @@ import React from 'react';
 import './Header.css';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@mui/joy';
-import IconButton from '@mui/material/IconButton';
+import { Button, Grid } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import logo from '../../assets/logo.png';
@@ -20,7 +19,8 @@ const ImageSrc = styled('span')({
 
 const Header = () => {
     const navigate = useNavigate();
-
+    const url = window.location.href;
+    const isLoggedInPage = url === 'http://localhost:3000/Register' || url === 'http://localhost:3000/login' || url === 'http://localhost:3000/FillQuestionnaire';
     const handleGoBack = () => {
         navigate(-1);
     }
@@ -29,21 +29,27 @@ const Header = () => {
     }
     const handleBackToHomePage = () => {
         navigate('/ManagerPage');
-// navigate('/MatchMakerPage');
+        // navigate('/MatchMakerPage');
     }
 
     return (
         <>
             <div className='header' style={{ backgroundImage: `url(${logo})` }} onClick={handleBackToHomePage}>
                 <div className="actionsButtons">
-                    <IconButton onClick={handleLogout}>
-                        יציאה
-                        <LogoutIcon />
-                    </IconButton>
-                    <IconButton onClick={handleGoBack}>
-                        חזרה
-                        <ArrowBackIcon />
-                    </IconButton>
+                    <Grid container spacing={2}>
+                        {!isLoggedInPage && <Grid item>
+                            <Button variant="contained" onClick={handleLogout}>
+                                <LogoutIcon />
+                                יציאה
+                            </Button>
+                        </Grid>}
+                        <Grid item>
+                            <Button variant="contained" onClick={handleGoBack}>
+                                חזרה
+                                <ArrowBackIcon />
+                            </Button>
+                        </Grid>
+                    </Grid>
                 </div>
             </div>
             {/* <ImageSrc style={{ backgroundImage: `url(${logo})` }} /> */}

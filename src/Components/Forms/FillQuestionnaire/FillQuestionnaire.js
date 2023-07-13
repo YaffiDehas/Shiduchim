@@ -16,7 +16,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import { Button, Grid, Card, Alert } from '@mui/material';
 import Header from '../../Header/Header';
 import Recomended from '../RecomendedPeople/Recomended';
@@ -77,7 +77,6 @@ export default function FormPropsTextFields() {
   const handleValidateStep = () => {
     const RequiredFieldsStep1 = ['firstName', 'lastName', 'gender', 'age', 'familyStatus', 'bornDate', 'city', 'countryBirth', 'phone', 'email', 'characters', 'colorSkin', 'height', 'bodyStracture', 'healthCondition', 'economicSituation', 'clothingStyle', 'look', 'headdress', 'sector', 'origin', 'yeshivaOrSeminar', 'doingToday', 'fatherName', 'fatherDoing', 'motherName', 'motherDoing', 'mozaAv', 'mozaEm', 'siblings', 'parentStatus', 'halachaMethod'];
     const RequiredFieldsStep2 = ['drishotSector', 'drishotLook', 'drishotFavoriteMoza', 'fromAge', 'mostAge', 'fromHeight', 'mostHeight'];
-    const RequiredFieldsStep3 = ['casherPhone', 'licence', 'smoking'];
     const RequiredFieldsStep6 = ['fillQuestionarieName', 'fillQuestionariePhone', 'fillQuestionarieRelative'];
 
     let errors = {};
@@ -95,17 +94,6 @@ export default function FormPropsTextFields() {
     }
     if (activeStep === 1) {
       RequiredFieldsStep2.map((required) => {
-        const isFilled = filledFields.find((field) => field === required);
-        if (!isFilled) {
-          errors = { ...errors, [required]: "נא למלא שדה חובה" };
-        }
-        if (isFilled) {
-          errors = { ...errors, [required]: "" };
-        }
-      });
-    }
-    if (activeStep === 2) {
-      RequiredFieldsStep3.map((required) => {
         const isFilled = filledFields.find((field) => field === required);
         if (!isFilled) {
           errors = { ...errors, [required]: "נא למלא שדה חובה" };
@@ -142,8 +130,23 @@ export default function FormPropsTextFields() {
 
     form.inLaws.push(inLawsForm);
     form.recomendedPeople.push(recomendForm);
-
-    axios.post("http://localhost:5000/api/shiduchim/public/register-candidate", form)
+    console.log(form);
+    let newRecomendedPeople = [];
+    form.recomendedPeople && form.recomendedPeople.length >= 1 && form.recomendedPeople.map((r) => {
+      if (r.recommendRelative || r.recommendPhone || r.recommendPhone) {
+        newRecomendedPeople.push(r);
+      }
+    });
+    let newInLaws = [];
+    form.inLaws && form.inLaws.length >= 1 && form.inLaws.map((l) => {
+      if (l.fatherInLawPhone || l.fatherInLawName || l.fatherInLawCity) {
+        newInLaws.push(l);
+      }
+    });
+    setForm({ ...form, inLaws: newInLaws, recomendedPeople: newRecomendedPeople });
+    const updatedForm = { ...form, inLaws: newInLaws, recomendedPeople: newRecomendedPeople };
+    console.log('updatedForm', updatedForm)
+    axios.post("http://localhost:5000/api/shiduchim/public/register-candidate", updatedForm)
       .then(resp => {
         if (resp.status === 201) {
           setSuccessRegistrationMessage(resp.data.message);
@@ -180,9 +183,9 @@ export default function FormPropsTextFields() {
 
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
       setSkipped(newSkipped);
-    }
-    if (activeStep === 6 || (activeStep + 1 === 6)) {
-      handleSubmitForm();
+      if (activeStep === 6 || (activeStep + 1 === 6)) {
+        handleSubmitForm();
+      }
     }
   };
 
@@ -274,7 +277,7 @@ export default function FormPropsTextFields() {
                       helperText={formErrors.gender}
                       defaultValue={form.gender}
                     >
-                      <MenuItem value="זכר">זכר</MenuItem>
+                      <MenuItem value="זכר" >זכר</MenuItem>
                       <MenuItem value="נקבה">נקבה</MenuItem>
                     </Select>
                     {formErrors.gender && <FormHelperText>{formErrors.gender}</FormHelperText>}
@@ -457,19 +460,19 @@ export default function FormPropsTextFields() {
                   />
                 </Grid>
                 <Grid item>
-                   <FormControl fullWidth>
+                  <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label">שיוך מגזרי</InputLabel>
                     <Select
                       required
                       name='sector'
                       label="שיוך מגזרי"
                       onChange={handleChangeInput}
-                      error={formErrors.gender}
-                      helperText={formErrors.gender}
-                      defaultValue={form.gender}
+                      error={formErrors.sector}
+                      helperText={formErrors.sector}
+                      defaultValue={form.sector}
                     >
-                      <MenuItem value="ספרדי">ספרדי</MenuItem>
-                      <MenuItem value="חסידי">חסידי</MenuItem>
+                      <MenuItem value="ספרדי" >ספרדי</MenuItem>
+                      <MenuItem value="חסידי" >חסידי</MenuItem>
                       <MenuItem value="ליטאי">ליטאי</MenuItem>
                       <MenuItem value="תימני">תימני</MenuItem>
 
@@ -836,7 +839,6 @@ export default function FormPropsTextFields() {
                 <Grid container spacing={2}>
                   <Grid item>
                     <TextField
-                      required
                       label="שם"
                       name="fatherInLawName"
                       defaultValue={inLawsForm.fatherInLawName}
@@ -845,7 +847,6 @@ export default function FormPropsTextFields() {
                   </Grid>
                   <Grid item>
                     <TextField
-                      required
                       label="טלפון"
                       name="fatherInLawPhone"
                       defaultValue={inLawsForm.fatherInLawPhone}
@@ -854,7 +855,6 @@ export default function FormPropsTextFields() {
                   </Grid>
                   <Grid item>
                     <TextField
-                      required
                       label="עיר"
                       name="fatherInLawCity"
                       defaultValue={inLawsForm.fatherInLawCity}
@@ -862,12 +862,12 @@ export default function FormPropsTextFields() {
                     />
                   </Grid>
                   {form.inLaws && form.inLaws.map((inLaw, index) => {
-                  if (inLaw.fatherInLawName || inLaw.fatherInLawPhone || inLaw.fatherInLawCity) {
-                    return <InLaws key={index + 1} data={inLaw} back={returnedBack} handleChange={handleChangeInputRecomended} />
-                  }
-                })}
+                    if (inLaw.fatherInLawName || inLaw.fatherInLawPhone || inLaw.fatherInLawCity) {
+                      return <InLaws key={index + 1} data={inLaw} back={returnedBack} handleChange={handleChangeInputRecomended} />
+                    }
+                  })}
                   <Button onClick={handleAddInLaws}>הוסף</Button>
-                </Grid> 
+                </Grid>
               )
             }
             {activeStep === 5 && (

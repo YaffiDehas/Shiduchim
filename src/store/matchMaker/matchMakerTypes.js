@@ -1,9 +1,12 @@
-export const LOAD_MEORASIM ="LOAD_MEORASIM";
-export const Add_CANDIDATE ="Add_CANDIDATE";
-export const CLOSE_MATCH ="CLOSE_MATCH";
+export const DELETE_CANDIDATE = "DELETE_CANDIDATE";
+export const ADD_CANDIDATE = "ADD_CANDIDATE";
+export const LOAD_MEORASIM = "LOAD_MEORASIM";
+export const CLOSE_MATCH = "CLOSE_MATCH";
+
 
 export default {
+    DELETE_CANDIDATE,
+    ADD_CANDIDATE,
     LOAD_MEORASIM,
-    Add_CANDIDATE,
     CLOSE_MATCH
 }
